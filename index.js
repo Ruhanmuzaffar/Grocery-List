@@ -13,14 +13,9 @@ const form = document.querySelector("#form");
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  console.log("clicked");
-  console.log("tar>>", event.target);
-  console.log(event.currentTarget);
 
   const { item, units, unitPrice } = event.target;
-  console.log(">>", item.value);
-  console.log(">>", units.value);
-  console.log(">>", unitPrice.value);
+
   const currentItem = {
     name: item.value,
     units: units.value,
@@ -30,11 +25,20 @@ form.addEventListener("submit", (event) => {
   form.reset();
 });
 
+// for (const button in buttons) {
+//   console.log(button);
+// }
+
+console.log("here");
+// buttons.addEventListener("click", () => {
+//   console.log("clicked");
+// });
+
 /*---------------functions-------------------- */
 
 function createForm() {
   const inputs = `
-  
+
   <form id="form">
       <label for="">item</label>
       <input type="text" class="item" id="item"  name="item"/>
@@ -43,14 +47,14 @@ function createForm() {
       <label for="">price per unit</label>
       <input type="text" class="unitPrice" id="unitPrice" />
       <input type="submit"class="addItem" id="addItem" />
-     
+
   </form>
-  
+
   <div class="contaner" id="container">
         <table class="fullTable" id="fullTable"></table>
-        <span>Grand Total : </span>
+        <span id="span"></span>
   </div>
-  
+
   `;
   main.innerHTML = inputs;
 }
@@ -66,10 +70,11 @@ function createTable() {
                       <th>Units</th>
                       <th>Price Per Unit</th>
                       <th>Total Prices</th>
+                      <th>Edit</th>
+                      <th>Delete</th>
+                      
   
-                  
-  
-          </tr>
+           </tr>
       </thead>
     <tbody id="tableBody">
   
@@ -81,29 +86,71 @@ function createTable() {
 }
 
 function insertItem(item) {
-  console.log("items>>", items);
-  console.log(item, "<<<item");
-
   items.push(item);
   let tableBody = "";
-  items.forEach((item) => {
+
+  let grandTotal = 0;
+  items.forEach((item, index) => {
+    grandTotal += item.units * item.unitPrice;
+    //const deleteButton = `<button ><span class="material-icons">delete</span></button>`;
+    const deleteButton = document.createElement("button");
+    deleteButton.id = index;
+    console.log(deleteButton);
+
     tableBody += `
   
-      <tb>
-          <tr>
+      
+          <tr >
               <td>${item.name}</td>
               <td>${item.units}</td>
               <td>${item.unitPrice}</td>
               <td>${item.units * item.unitPrice}</td>
+              <td><button ><span class="material-icons">edit</span></button></td>
+              <td><button class="delete" ><span class="material-icons">delete</span></button></td>
   
           </tr>
-      </tb>
+     
   
       `;
   });
 
   const tb = document.querySelector("#tableBody");
-  // const tableBody
-  console.log("tb>>.", tb);
+
   tb.innerHTML = tableBody;
+  const span = document.querySelector("#span");
+  span.innerHTML = `
+  <strong>
+    Grand Total : ${grandTotal}
+  </strong>
+  `;
+
+  // /................
+  const deleteButtons = Array.from(document.querySelectorAll(".delete"));
+
+  console.log("deleteButtons.>>", deleteButtons);
+
+  const tableBod = document.querySelector("#tableBody");
+  const row = document.querySelector("#row");
+
+  deleteButtons.forEach((delButton, index) => {
+    delButton.id = index;
+    delButton.addEventListener("click", () => {
+      console.log("this>>", this);
+      console.log("it was clicked", delButton.id);
+      // tableBod.removeChild(row);
+      const closest = delButton.closest("tr");
+      console.log(closest, "<<<closest");
+
+      console.log(tableBod, "tableBod");
+      tableBod.removeChild(closest);
+    });
+    console.log("delete button", delButton);
+  });
+
+  let button = document.querySelector("button");
+  // console.log("button>>", button);
+
+  button.addEventListener("click", () => {
+    console.log("it works");
+  });
 }

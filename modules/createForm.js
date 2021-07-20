@@ -1,4 +1,4 @@
-function createForm() {
+export function createForm() {
   const inputs = `
   
   <form id="form">
@@ -20,5 +20,3 @@ function createForm() {
   `;
   main.innerHTML = inputs;
 }
-
-module.exports = createForm;
