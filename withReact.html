@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>First React App</title>
+    <script
+      src="https://unpkg.com/react@17/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <style type="text/css">
+      #container {
+        width: 50%;
+        margin: auto;
+      }
+      table {
+        width: 80%;
+        padding: 1rem;
+        margin: 1rem 1rem;
+        border-collapse: collapse;
+        text-align: center;
+      }
+
+      th,
+      td {
+        padding: 1rem;
+        border: 2px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <script type="text/babel">
+      console.log("it works!");
+      function InputFields(props) {
+        console.log("inpu>.", props);
+        return (
+          <div className="formContainer">
+            <label>item</label>
+            <input
+              type="text"
+              id="item"
+              value={props.data.itemName}
+              onChange={props.updateItem}
+            />
+            <label>no of units</label>
+            <input
+              type="text"
+              id="units"
+              value={props.data.noOfUnits}
+              onChange={props.updateItem}
+            />
+            <label>price per unit</label>
+            <input
+              type="text"
+              id="pricePerUnit"
+              value={props.data.pricePerUnit}
+              onChange={props.updateItem}
+            />
+            <button onClick={props.addItemHandler}>add Item</button>
+
+            <div className="contaner" id="container">
+              <span id="span"></span>
+            </div>
+          </div>
+        );
+      }
+
+      function Table(props) {
+        return (
+          <div>
+            <table className="fullTable" id="fullTable">
+              <TableHead />
+              <TableBody
+                data={props.data}
+                deleteRowHandler={props.deleteRowHandler}
+              />
+            </table>
+          </div>
+        );
+      }
+
+      function TableHead() {
+        return (
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Units</th>
+              <th>Price Per Unit</th>
+              <th>Total Prices</th>
+              <th>Edit</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+        );
+      }
+      function TableBody(props) {
+        const data = props.data;
+
+        return <Rows data={data} deleteRowHandler={props.deleteRowHandler} />;
+      }
+      function Rows(props) {
+        let key = 0;
+        console.log();
+        return (
+          <tbody id="tableBody">
+            {props.data.items.map((item) => {
+              return (
+                <tr key={key++}>
+                  <td>{item.itemName}</td>
+                  <td>{item.noOfUnits}</td>
+                  <td>{item.pricePerUnit}</td>
+                  <td>{item.noOfUnits * item.pricePerUnit}</td>
+                  <td>
+                    <button>
+                      <span className="material-icons">edit</span>
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className="delete"
+                      onClick={() => props.deleteRowHandler(item.itemName)}
+                    >
+                      <span className="material-icons">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        );
+      }
+      class App extends React.Component {
+        constructor(props) {
+          super(props);
+
+          this.state = {
+            items: [],
+            itemName: "",
+            noOfUnits: 0,
+            pricePerUnit: 0,
+            grandTotal: 0,
+          };
+        }
+        // delete row handler
+
+        deleteRowHandler(itemToBeDeleted) {
+          let tempItems = JSON.parse(JSON.stringify(this.state.items));
+
+          console.log("tempItems", tempItems);
+          let currentItem = tempItems.filter(
+            (item) => item.itemName == itemToBeDeleted
+          );
+          currentItem = currentItem[0];
+
+          console.log("current item", currentItem);
+          const totalPriceOfCurrentItem =
+            currentItem.noOfUnits * currentItem.pricePerUnit;
+          console.log("price loss", totalPriceOfCurrentItem);
+
+          tempItems = tempItems.filter(
+            (item) => item.itemName != itemToBeDeleted
+          );
+
+          this.setState((prevState) => {
+            return {
+              items: tempItems,
+              grandTotal: (prevState.grandTotal -= totalPriceOfCurrentItem),
+            };
+          });
+        }
+        // update Item
+
+        updateItem(event) {
+          const inputValue = event.target.value;
+
+          if (event.target.id == "item") {
+            this.setState({ itemName: inputValue });
+          } else if (event.target.id == "units") {
+            this.setState({ noOfUnits: parseInt(inputValue) });
+          } else if (event.target.id == "pricePerUnit") {
+            this.setState({ pricePerUnit: parseInt(inputValue) });
+          }
+        }
+        // add item handler
+
+        addItemHandler() {
+          console.log("in state>>", this.state);
+
+          if (
+            this.state.itemName != "" &&
+            this.state.noOfUnits != 0 &&
+            this.state.pricePerUnit != 0
+          ) {
+            const tempStateItems = JSON.parse(JSON.stringify(this.state.items));
+
+            const newItem = {
+              itemName: this.state.itemName,
+              noOfUnits: this.state.noOfUnits,
+              pricePerUnit: this.state.pricePerUnit,
+            };
+            const priceAddition =
+              this.state.noOfUnits * this.state.pricePerUnit;
+            console.log("PRICE ADD", priceAddition);
+            this.setState((prevState) => {
+              return {
+                items: prevState.items.concat(newItem),
+                itemName: "",
+                noOfUnits: 0,
+                pricePerUnit: 0,
+                grandTotal: parseInt((prevState.grandTotal += priceAddition)),
+              };
+            });
+          }
+        }
+        render() {
+          return (
+            <div id="container">
+              <InputFields
+                data={this.state}
+                updateItem={this.updateItem.bind(this)}
+                addItemHandler={this.addItemHandler.bind(this)}
+              />
+              <Table
+                data={this.state}
+                deleteRowHandler={this.deleteRowHandler.bind(this)}
+              />
+              <span>
+                <strong>grandTotal : {this.state.grandTotal}</strong>
+              </span>
+            </div>
+          );
+        }
+      }
+
+      ReactDOM.render(<App />, document.querySelector("#app"));
+    </script>
+  </body>
+</html>
