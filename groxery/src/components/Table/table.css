@@ -1,0 +1,24 @@
+table {
+  width: 80%;
+  padding: 1rem;
+  margin: 1rem 1rem;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+th,
+td {
+  padding: 1rem;
+  border: 2px solid black;
+}
+
+.wrapper {
+  margin: auto;
+
+  width: 72%;
+}
+.delete {
+  background-color: rgb(232, 89, 89);
+  border: 1px solid white;
+  border-radius: 5px;
+}

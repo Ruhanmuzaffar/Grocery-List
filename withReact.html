@@ -45,7 +45,6 @@
     <script type="text/babel">
       console.log("it works!");
       function InputFields(props) {
-        console.log("inpu>.", props);
         return (
           <div className="formContainer">
             <label>item</label>
@@ -86,12 +85,15 @@
               <TableBody
                 data={props.data}
                 deleteRowHandler={props.deleteRowHandler}
+                editContent={props.editContent}
+                saveChangeHandler={props.saveChangeHandler}
               />
             </table>
           </div>
         );
       }
 
+      [1, 2, 3] | [1, 3];
       function TableHead() {
         return (
           <thead>
@@ -109,29 +111,54 @@
       function TableBody(props) {
         const data = props.data;
 
-        return <Rows data={data} deleteRowHandler={props.deleteRowHandler} />;
+        return (
+          <Rows
+            data={data}
+            deleteRowHandler={props.deleteRowHandler}
+            editContent={props.editContent}
+            saveChangeHandler={props.saveChangeHandler}
+          />
+        );
       }
       function Rows(props) {
         let key = 0;
-        console.log();
+
         return (
           <tbody id="tableBody">
             {props.data.items.map((item) => {
               return (
                 <tr key={key++}>
-                  <td>{item.itemName}</td>
-                  <td>{item.noOfUnits}</td>
-                  <td>{item.pricePerUnit}</td>
+                  <td
+                    contentEditable="true"
+                    onInput={props.editContent}
+                    id="changeItem"
+                  >
+                    {item.itemName}
+                  </td>
+                  <td
+                    contentEditable="true"
+                    onInput={props.editContent}
+                    id="changeUnits"
+                  >
+                    {item.noOfUnits}
+                  </td>
+                  <td
+                    contentEditable="true"
+                    onInput={props.editContent}
+                    id="changePrice"
+                  >
+                    {item.pricePerUnit}
+                  </td>
                   <td>{item.noOfUnits * item.pricePerUnit}</td>
                   <td>
-                    <button>
-                      <span className="material-icons">edit</span>
+                    <button onClick={() => props.saveChangeHandler(item.id)}>
+                      <span className="material-icons">save</span>
                     </button>
                   </td>
                   <td>
                     <button
                       className="delete"
-                      onClick={() => props.deleteRowHandler(item.itemName)}
+                      onClick={() => props.deleteRowHandler(item.id)}
                     >
                       <span className="material-icons">delete</span>
                     </button>
@@ -147,32 +174,30 @@
           super(props);
 
           this.state = {
-            items: [],
+            items: [
+              { id: 0, itemName: "banana", noOfUnits: 2, pricePerUnit: 3 },
+            ],
             itemName: "",
             noOfUnits: 0,
             pricePerUnit: 0,
-            grandTotal: 0,
+            grandTotal: 6,
+            id: 1,
           };
         }
         // delete row handler
 
-        deleteRowHandler(itemToBeDeleted) {
+        deleteRowHandler(itemToBeDeletedId) {
           let tempItems = JSON.parse(JSON.stringify(this.state.items));
 
-          console.log("tempItems", tempItems);
           let currentItem = tempItems.filter(
-            (item) => item.itemName == itemToBeDeleted
+            (item) => item.id == itemToBeDeletedId
           );
           currentItem = currentItem[0];
 
-          console.log("current item", currentItem);
           const totalPriceOfCurrentItem =
             currentItem.noOfUnits * currentItem.pricePerUnit;
-          console.log("price loss", totalPriceOfCurrentItem);
 
-          tempItems = tempItems.filter(
-            (item) => item.itemName != itemToBeDeleted
-          );
+          tempItems = tempItems.filter((item) => item.id != itemToBeDeletedId);
 
           this.setState((prevState) => {
             return {
@@ -197,8 +222,6 @@
         // add item handler
 
         addItemHandler() {
-          console.log("in state>>", this.state);
-
           if (
             this.state.itemName != "" &&
             this.state.noOfUnits != 0 &&
@@ -207,13 +230,14 @@
             const tempStateItems = JSON.parse(JSON.stringify(this.state.items));
 
             const newItem = {
+              id: this.state.id++,
               itemName: this.state.itemName,
               noOfUnits: this.state.noOfUnits,
               pricePerUnit: this.state.pricePerUnit,
             };
             const priceAddition =
               this.state.noOfUnits * this.state.pricePerUnit;
-            console.log("PRICE ADD", priceAddition);
+
             this.setState((prevState) => {
               return {
                 items: prevState.items.concat(newItem),
@@ -221,9 +245,60 @@
                 noOfUnits: 0,
                 pricePerUnit: 0,
                 grandTotal: parseInt((prevState.grandTotal += priceAddition)),
+                id: prevState.id++,
               };
             });
           }
+        }
+
+        // edit contente
+
+        editContent(e) {
+          let value = e.target.textContent;
+          // value = parseInt(value);
+          console.log(value, typeof value);
+          const nextSibling = e.target.nextElementSibling.innerHTML;
+          console.log("next>", nextSibling);
+          console.log("event", e.target);
+
+          if (e.target.id == "changeItem") {
+            this.setState({ itemName: value });
+          } else if (e.target.id == "changeUnits") {
+            this.setState({ noOfUnits: +value });
+          } else if (e.target.id == "changePrice") {
+            this.setState({ pricePerUnit: +value });
+          }
+          console.log("state>>>", this.state);
+        }
+        // save edited changes
+
+        saveChangeHandler(id) {
+          console.log("here in save change handler", id);
+          console.log("staate>>", this.state);
+
+          let tempItems = JSON.parse(JSON.stringify(this.state.items));
+
+          let UpdatedItems = tempItems.map((item) => {
+            if (item.id == id) {
+              return {
+                itemName: this.state.itemName,
+                id: item.id,
+                noOfUnits:
+                  this.state.noOfUnits != 0
+                    ? this.state.noOfUnits
+                    : item.noOfUnits,
+                pricePerUnit:
+                  this.state.pricePerUnit != 0
+                    ? this.state.pricePerUnit
+                    : item.pricePerUnit,
+              };
+            } else return item;
+          });
+
+          console.log("updated items>>>", UpdatedItems);
+          this.setState({
+            itemsj: UpdatedItems,
+          });
         }
         render() {
           return (
@@ -233,9 +308,12 @@
                 updateItem={this.updateItem.bind(this)}
                 addItemHandler={this.addItemHandler.bind(this)}
               />
+              <hr />
               <Table
                 data={this.state}
                 deleteRowHandler={this.deleteRowHandler.bind(this)}
+                editContent={this.editContent.bind(this)}
+                saveChangeHandler={this.saveChangeHandler.bind(this)}
               />
               <span>
                 <strong>grandTotal : {this.state.grandTotal}</strong>
@@ -249,3 +327,5 @@
     </script>
   </body>
 </html>
+
+
